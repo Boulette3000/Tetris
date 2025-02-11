@@ -1,4 +1,6 @@
-Tetris,
+Pour notre jeu Tetris,
+
+Il est organisé en 3 fichiers de code : Tetris.html, script.js et style.css.
 
 Utiliser les flèches du clavier pour déplacer les pièces de gauche à droite dans la zone de jeu.
 
