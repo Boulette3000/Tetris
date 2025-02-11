@@ -77,15 +77,88 @@ class Tetris {
 
     moveDown() {
         this.currentPiece.y++;
+        if (this.hasCollision()) {
+            this.currentPiece.y--;
+            this.currentPiece = this.createNewPiece();
+            if (this.hasCollision()) {
+                this.gameOver = true;
+            }
+        }
     }
 
     moveLeft() {
         this.currentPiece.x--;
+        if (this.hasCollision()) {
+            this.currentPiece.x++;
+        }
     }
 
     moveRight() {
         this.currentPiece.x++;
+        if (this.hasCollision()) {
+            this.currentPiece.x--;
+        }
     }
+
+    hasCollision() {
+        const piece = this.currentPiece;
+        for (let row = 0; row < piece.shape.length; row++) {
+            for (let col = 0; col < piece.shape[row].length; col++) {
+                if (piece.shape[row][col]) {
+                    const newX = piece.x + col;
+                    const newY = piece.y + row;
+                    
+                    if (newX < 0 || newX >= COLS || newY >= ROWS) return true;
+                    if (newY >= 0 && this.grid[newY][newX]) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    clearLines() {
+        let linesCleared = 0;
+        let linesToClear = [];
+  
+        // Identifier toutes les lignes complètes
+        for (let row = ROWS - 1; row >= 0; row--) {
+            if (this.grid[row].every(cell => cell !== 0)) {
+                linesToClear.push(row);
+                linesCleared++;
+            }
+        }
+
+        if (linesCleared > 0) {
+            // Supprimer les lignes complètes
+            linesToClear.forEach(row => {
+                this.grid.splice(row, 1);
+                this.grid.unshift(Array(COLS).fill(0));
+            });
+        }
+  
+        return linesCleared;
+    }
+  
+    rotate() {
+        const rotated = [];
+        for(let i = 0; i < this.currentPiece.shape[0].length; i++) {
+            const row = [];
+            for(let j = this.currentPiece.shape.length - 1; j >= 0; j--) {
+                row.push(this.currentPiece.shape[j][i]);
+            }
+            rotated.push(row);
+        }
+        
+        const originalShape = this.currentPiece.shape;
+        this.currentPiece.shape = rotated;
+        
+        if (this.hasCollision()) {
+            this.currentPiece.shape = originalShape;
+        }
+    }
+
+
 }
 
 
