@@ -19,3 +19,8 @@ canvas {
     background-color: #000;
 }
 
+#score {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}

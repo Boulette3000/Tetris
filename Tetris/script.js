@@ -17,12 +17,14 @@ const tetrominos = [
 // Initialisation du canvas
 const canvas = document.getElementById('tetris');
 const ctx = canvas.getContext('2d');
+const scoreElement = document.getElementById('score');
 
 class Tetris {
     constructor() {
         this.grid = Array(ROWS).fill().map(() => Array(COLS).fill(0));
         this.currentPiece = this.createNewPiece();
         this.gameOver = false;
+        this.score = 0;
     }
 
     createNewPiece() {
@@ -44,6 +46,9 @@ class Tetris {
 
         // Dessiner la pièce courante
         this.drawPiece();
+
+        // Mettre à jour le score
+        scoreElement.textContent = `Score: ${this.score}`;
     }
 
     drawGrid() {
@@ -79,6 +84,7 @@ class Tetris {
         this.currentPiece.y++;
         if (this.hasCollision()) {
             this.currentPiece.y--;
+            this.lockPiece();
             this.currentPiece = this.createNewPiece();
             if (this.hasCollision()) {
                 this.gameOver = true;
@@ -116,30 +122,65 @@ class Tetris {
         return false;
     }
 
-
-    clearLines() {
-        let linesCleared = 0;
-        let linesToClear = [];
-  
-        // Identifier toutes les lignes complètes
-        for (let row = ROWS - 1; row >= 0; row--) {
-            if (this.grid[row].every(cell => cell !== 0)) {
-                linesToClear.push(row);
-                linesCleared++;
+    lockPiece() {
+        const piece = this.currentPiece;
+        for (let row = 0; row < piece.shape.length; row++) {
+            for (let col = 0; col < piece.shape[row].length; col++) {
+                if (piece.shape[row][col]) {
+                    const newY = piece.y + row;
+                    const newX = piece.x + col;
+                    if (newY >= 0) {
+                        this.grid[newY][newX] = piece.color;
+                    }
+                }
             }
         }
-
-        if (linesCleared > 0) {
-            // Supprimer les lignes complètes
-            linesToClear.forEach(row => {
-                this.grid.splice(row, 1);
-                this.grid.unshift(Array(COLS).fill(0));
-            });
-        }
-  
-        return linesCleared;
+        this.clearLines();
     }
-  
+
+    // clearLines() {
+    //     for (let row = ROWS - 1; row >= 0; row--) {
+    //         if (this.grid[row].every(cell => cell !== 0)) {
+    //             this.grid.splice(row, 1);
+    //             this.grid.unshift(Array(COLS).fill(0));
+    //             this.score += 100;
+    //         }
+    //     }
+    // }
+
+    clearLines() {
+      let linesCleared = 0;
+      let linesToClear = [];
+
+      // Identifier toutes les lignes complètes
+      for (let row = ROWS - 1; row >= 0; row--) {
+          if (this.grid[row].every(cell => cell !== 0)) {
+              linesToClear.push(row);
+              linesCleared++;
+          }
+      }
+
+      // Calculer le score en fonction du nombre de lignes effacées simultanément
+      if (linesCleared > 0) {
+          const scoreMultiplier = {
+              1: 100,    // 1 ligne = 100 points
+              2: 300,    // 2 lignes = 300 points
+              3: 500,    // 3 lignes = 500 points
+              4: 800     // 4 lignes (Tetris) = 800 points
+          };
+          this.score += scoreMultiplier[linesCleared] || linesCleared * 100;
+
+          // Supprimer les lignes complètes
+          linesToClear.forEach(row => {
+              this.grid.splice(row, 1);
+              this.grid.unshift(Array(COLS).fill(0));
+          });
+      }
+
+      return linesCleared;
+  }
+
+
     rotate() {
         const rotated = [];
         for(let i = 0; i < this.currentPiece.shape[0].length; i++) {
@@ -157,10 +198,7 @@ class Tetris {
             this.currentPiece.shape = originalShape;
         }
     }
-
-
 }
-
 
 // Initialisation du jeu
 const game = new Tetris();
@@ -191,6 +229,13 @@ function gameLoop() {
     if (!game.gameOver) {
         game.moveDown();
         game.draw();
+    } else {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'white';
+        ctx.font = '30px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Game Over!', canvas.width / 2, canvas.height / 2);
     }
     setTimeout(gameLoop, 1000);
 }
