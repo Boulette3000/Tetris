@@ -1,3 +1,6 @@
+//Théo Bouvier, Alexandre Lathoud
+
+
 // ==================== CONFIGURATION DE BASE ====================
 // Définit la taille de la grille de jeu : 20 lignes et 10 colonnes
 const ROWS = 20;
